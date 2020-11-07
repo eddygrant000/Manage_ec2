@@ -16,8 +16,19 @@ default_count = 1
 default_keyname = 'devops'
 default_sec_group = 'personal'
 default_type = 't2.micro'
-default_status = 'status'
+default_status = ''
 default_tag = 'Nodes'
+
+def change_tags():
+    user_choice = input("Do you want to change tags [Y/N]: ")
+    if user_choice.upper() == 'Y':
+        total_tags = []
+        total_tags.append(input("Enter tags: "))
+    elif user_choice.upper() == 'N':
+        print("Ok it's fine")
+    else:
+        print("Invalid Choice")
+
 
 ## Fetch Arguements
 def fetch_args():
@@ -27,15 +38,16 @@ def fetch_args():
         default_status = all_args.pop(1)
     except:
         print("Please provide Valid Input:\nExample:\n[Create | Stop | Status | Terminate]")
+        exit(1)
     else:
         for i in all_args:
-            if 'allport' == i.lower():
+            if 'allport' in i.lower():
                 default_sec_group = 'all expose'
-            elif 'ubuntu16' == i.lower():
+            elif 'ubuntu16' in i.lower():
                 default_image = ubuntu16
-            elif 'rhel' == i.lower():
+            elif 'rhel' in i.lower():
                 default_image = rhel8
-            elif 'amazon' == i.lower():
+            elif 'amazon' in i.lower():
                 default_image = amazon
             elif i.isdigit():
                 default_count = int(i)
@@ -84,13 +96,14 @@ def tableprint(field_names, rows):
 # status of instance
 def status_instance():
     temp = []
-    fields = ("Name", "Status", "Type", "Public IP", "Private IP")
+    fields = ("Name", "Status", "Type", "Public IP", "Private IP", "Image")
     for instance in ec2.instances.all():
         temp.append((instance.tags[0]["Value"], 
                      instance.state["Name"], 
                      instance.instance_type, 
                      instance.public_ip_address,
-                     instance.private_ip_address,))
+                     instance.private_ip_address,
+                     instance.image.description[:30]))
     tableprint(fields, temp)
 
 
@@ -117,7 +130,7 @@ if __name__ == "__main__":
     elif default_status.lower() == 'status':
         status_instance()
     elif default_status.lower() == 'terminate':
-        terminate_instace()
+        terminate_instance()
     elif default_status.lower() == 'stop':
         stop_instance()
     else:
