@@ -133,5 +133,7 @@ if __name__ == "__main__":
         terminate_instance()
     elif default_status.lower() == 'stop':
         stop_instance()
+    elif default_status.lower() == 'start':
+        start_instance()
     else:
-        print("Please provide Valid Input:\nExample:\n[Create | Stop | Status | Terminate]")
+        print("Please provide Valid Input:\nExample:\n[Create | Start | Stop | Status | Terminate]")
