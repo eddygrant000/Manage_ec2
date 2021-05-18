@@ -4,9 +4,9 @@ import boto3
 import sys
 from prettytable import PrettyTable
 
-ec2 = boto3.resource("ec2")
 
 ## Default Values
+account = ""
 ubuntu16 = "ami-048bb32b1fb7c36b7"
 ubuntu20 = "ami-0cda377a1b884a1bc"
 rhel8 = "ami-052c08d70def0ac62"
@@ -32,7 +32,7 @@ def change_tags():
 
 ## Fetch Arguements
 def fetch_args():
-    global default_image, default_count, default_keyname, default_sec_group, default_type, default_status
+    global default_image, default_count, default_keyname, default_sec_group, default_type, default_status, account, ec2
     all_args = sys.argv
     try:
         default_status = all_args.pop(1)
@@ -41,7 +41,9 @@ def fetch_args():
         exit(1)
     else:
         for i in all_args:
-            if 'allport' in i.lower():
+            if i == 'CT':
+                account = "CT"
+            elif 'allport' in i.lower():
                 default_sec_group = 'all expose'
             elif 'ubuntu16' in i.lower():
                 default_image = ubuntu16
@@ -53,6 +55,13 @@ def fetch_args():
                 default_count = int(i)
             elif 't2' in i.lower():
                 default_type = i.lower()
+
+
+        if account == "CT":
+            session = boto3.Session(profile_name='CT')
+            ec2 = session.resource('ec2')
+        else:
+            ec2 = boto3.resource("ec2")
 
 
 ## Create ec2 instance
@@ -98,12 +107,15 @@ def status_instance():
     temp = []
     fields = ("Name", "Status", "Type", "Public IP", "Private IP", "Image")
     for instance in ec2.instances.all():
-        temp.append((instance.tags[0]["Value"], 
-                     instance.state["Name"], 
-                     instance.instance_type, 
-                     instance.public_ip_address,
-                     instance.private_ip_address,
-                     instance.image.description[:30]))
+        try:
+            temp.append((instance.tags[0]["Value"], 
+                         instance.state["Name"], 
+                         instance.instance_type, 
+                         instance.public_ip_address,
+                         instance.private_ip_address,
+                         instance.image.description[:30]))
+        except:
+            print('Instance Without Tag Found', instance.id)
     tableprint(fields, temp)
 
 
