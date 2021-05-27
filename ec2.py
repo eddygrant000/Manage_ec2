@@ -18,6 +18,7 @@ default_sec_group = 'personal'
 default_type = 't2.micro'
 default_status = ''
 default_tag = 'Nodes'
+instancename = ''
 
 def change_tags():
     user_choice = input("Do you want to change tags [Y/N]: ")
@@ -32,7 +33,7 @@ def change_tags():
 
 ## Fetch Arguements
 def fetch_args():
-    global default_image, default_count, default_keyname, default_sec_group, default_type, default_status, account, ec2
+    global instancename, default_image, default_count, default_keyname, default_sec_group, default_type, default_status, account, ec2
     all_args = sys.argv
     try:
         default_status = all_args.pop(1)
@@ -55,7 +56,8 @@ def fetch_args():
                 default_count = int(i)
             elif 't2' in i.lower():
                 default_type = i.lower()
-
+            elif 'name=' in i.lower():
+                instancename= i.split("=")[-1]
 
         if account == "CT":
             session = boto3.Session(profile_name='CT')
@@ -85,11 +87,44 @@ def create_instance():
 
 
 # Start instance
+#def start_instance():
+    #for i in ec2.instances.all():
+        #if i.state["Name"] == 'stopped':
+            #ec2.Instance(i.id).start()
+            #print(f'{i.id} Start SuccessFully')
+
+# stop instance
+#def stop_instance():
+    #for i in ec2.instances.all():
+        #if i.state['Name'] == 'running':
+            #ec2.Instance(i.id).stop()
+            #print(f'{i.id} Stop SuccessFully')
+
+def stop_instance():
+    if instancename != '':
+        for i in ec2.instances.all():
+            if i.tags[0]["Value"].lower() == instancename.lower():
+                ec2.Instance(i.id).stop()
+                print(f'{i.id} {i.tags[0]["Value"]} Stop SuccessFully')
+                break
+    else:
+        for i in ec2.instances.all():
+            if i.state["Name"] == 'running':
+                ec2.Instance(i.id).stop()
+                print(f'{i.id} {i.tags[0]["Value"]} Stop SuccessFully')
+
 def start_instance():
-    for i in ec2.instances.all():
-        if i.state["Name"] == 'stopped':
-            ec2.Instance(i.id).start()
-            print(f'{i.id} Start SuccessFully')
+    if instancename != '':
+        for i in ec2.instances.all():
+            if i.tags[0]["Value"].lower() == instancename.lower():
+                ec2.Instance(i.id).start()
+                print(f'{i.id} {i.tags[0]["Value"]} Start SuccessFully')
+                break
+    else:
+        for i in ec2.instances.all():
+            if i.state["Name"] == 'stopped':
+                ec2.Instance(i.id).start()
+                print(f'{i.id} {i.tags[0]["Value"]} Start SuccessFully')
             
 
 # create table for print
@@ -127,12 +162,6 @@ def terminate_instance():
             print(f'{i.id} Terminate SuccessFully')
 
 
-# stop instance
-def stop_instance():
-    for i in ec2.instances.all():
-        if i.state['Name'] == 'running':
-            ec2.Instance(i.id).stop()
-            print(f'{i.id} Stop SuccessFully')
 
 
 if __name__ == "__main__":
