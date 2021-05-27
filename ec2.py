@@ -54,8 +54,8 @@ def fetch_args():
                 default_image = amazon
             elif i.isdigit():
                 default_count = int(i)
-            elif 't2' in i.lower():
-                default_type = i.lower()
+            elif 'type=' in i.lower():
+                default_type = i.split("=")[-1]
             elif 'name=' in i.lower():
                 instancename= i.split("=")[-1]
 
@@ -85,46 +85,44 @@ def create_instance():
                     },]},]
         )
 
-
-# Start instance
-#def start_instance():
-    #for i in ec2.instances.all():
-        #if i.state["Name"] == 'stopped':
-            #ec2.Instance(i.id).start()
-            #print(f'{i.id} Start SuccessFully')
-
-# stop instance
-#def stop_instance():
-    #for i in ec2.instances.all():
-        #if i.state['Name'] == 'running':
-            #ec2.Instance(i.id).stop()
-            #print(f'{i.id} Stop SuccessFully')
-
 def stop_instance():
     if instancename != '':
         for i in ec2.instances.all():
-            if i.tags[0]["Value"].lower() == instancename.lower():
-                ec2.Instance(i.id).stop()
-                print(f'{i.id} {i.tags[0]["Value"]} Stop SuccessFully')
-                break
+            try:
+                if i.tags[0]["Value"].lower() == instancename.lower():
+                    ec2.Instance(i.id).stop()
+                    print(f'{i.id} {i.tags[0]["Value"]} Stop SuccessFully')
+                    break
+            except:
+                pass
+
     else:
         for i in ec2.instances.all():
-            if i.state["Name"] == 'running':
-                ec2.Instance(i.id).stop()
-                print(f'{i.id} {i.tags[0]["Value"]} Stop SuccessFully')
+            try:
+                if i.state["Name"] == 'running':
+                    ec2.Instance(i.id).stop()
+                    print(f'{i.id} {i.tags[0]["Value"]} Stop SuccessFully')
+            except:
+                pass
 
 def start_instance():
     if instancename != '':
         for i in ec2.instances.all():
-            if i.tags[0]["Value"].lower() == instancename.lower():
-                ec2.Instance(i.id).start()
-                print(f'{i.id} {i.tags[0]["Value"]} Start SuccessFully')
-                break
+            try:
+                if i.tags[0]["Value"].lower() == instancename.lower():
+                    ec2.Instance(i.id).start()
+                    print(f'{i.id} {i.tags[0]["Value"]} Start SuccessFully')
+                    break
+            except:
+                print('Instance Without Tag Found', i.id)
     else:
         for i in ec2.instances.all():
-            if i.state["Name"] == 'stopped':
-                ec2.Instance(i.id).start()
-                print(f'{i.id} {i.tags[0]["Value"]} Start SuccessFully')
+            try:
+                if i.state["Name"] == 'stopped':
+                    ec2.Instance(i.id).start()
+                    print(f'{i.id} {i.tags[0]["Value"]} Start SuccessFully')
+            except:
+                print('Instance Without Tag Found', i.id)
             
 
 # create table for print
